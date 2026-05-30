@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from models import JobStatus
+from backend.models import JobStatus
 
 
 class UserBase(BaseModel):

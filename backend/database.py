@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 
-DATABASE_URL = "sqlite:///./jobs.db"
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+_DB_PATH = os.path.join(_BACKEND_DIR, "jobs.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{_DB_PATH}")
 
 engine = create_engine(
     DATABASE_URL,

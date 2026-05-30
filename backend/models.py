@@ -7,7 +7,7 @@ from typing import Any, Optional
 from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database import Base
+from backend.database import Base
 
 
 class JobStatus(str, enum.Enum):

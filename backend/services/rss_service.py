@@ -7,7 +7,7 @@ import feedparser
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
-from models import Job, RankingRule
+from backend.models import Job, RankingRule
 
 
 def _extract_entry_fields(entry: Any) -> Tuple[str, Optional[str], Optional[str], Optional[str]]:

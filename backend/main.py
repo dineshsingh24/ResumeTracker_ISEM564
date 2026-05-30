@@ -428,12 +428,19 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
         return user
 
+    _default_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    _extra_origins = [
+        origin.strip()
+        for origin in os.environ.get("APP_CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-        ],
+        allow_origins=[*_default_origins, *_extra_origins],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
