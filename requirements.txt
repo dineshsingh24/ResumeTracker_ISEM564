@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+email-validator
+feedparser
+beautifulsoup4
+pypdf
+python-docx
+python-multipart
+passlib
+python-jose[cryptography]
+cryptography
