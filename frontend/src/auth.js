@@ -1,3 +1,10 @@
+export function getApiBaseUrl() {
+  const fromEnv = import.meta.env.VITE_API_BASE_URL
+  if (fromEnv) return String(fromEnv).replace(/\/$/, '')
+  if (import.meta.env.PROD) return window.location.origin
+  return 'http://127.0.0.1:8000'
+}
+
 export function getAuthToken() {
   return window.localStorage.getItem('rt_auth_token') || ''
 }

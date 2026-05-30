@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { apiFetch } from '../auth.js'
+import { apiFetch, getApiBaseUrl } from '../auth.js'
 import { AlertBubble } from '../components/AlertBubble.jsx'
 
 const CHART_COLORS = ['#111827', '#4B5563', '#6B7280', '#9CA3AF', '#D1D5DB', '#E5E7EB']
@@ -76,7 +76,7 @@ function DrilldownModal({ open, title, rows, onClose, onDownload }) {
 }
 
 export function AnalyticsPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const [summary, setSummary] = useState(null)
   const [series, setSeries] = useState([])
   const [loading, setLoading] = useState(false)

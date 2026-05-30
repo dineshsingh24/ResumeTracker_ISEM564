@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FileText, Trash2 } from 'lucide-react'
 
-import { apiFetch } from '../auth.js'
+import { apiFetch, getApiBaseUrl } from '../auth.js'
 
 const COLUMNS = [
   { id: 'saved', title: 'Saved' },
@@ -106,7 +106,7 @@ function JobDetailPanel({ job, onClose }) {
 }
 
 export function TrackerPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(false)
   const [dragging, setDragging] = useState(null)

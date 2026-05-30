@@ -16,11 +16,11 @@ import {
   User,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { apiFetch } from '../auth.js'
+import { apiFetch, getApiBaseUrl } from '../auth.js'
 import { AlertBubble } from '../components/AlertBubble.jsx'
 
 export function ConfigPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
 
   const [resumeFile, setResumeFile] = useState(null)
   const [resumeRows, setResumeRows] = useState([])

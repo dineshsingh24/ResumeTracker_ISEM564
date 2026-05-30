@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { getApiBaseUrl } from '../auth.js'
+
 export function ForgotPasswordPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const [email, setEmail] = useState('')
   const [statusText, setStatusText] = useState('')
   const [resetToken, setResetToken] = useState('')

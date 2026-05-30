@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { setAuthToken } from '../auth.js'
+import { getApiBaseUrl, setAuthToken } from '../auth.js'
 import { AlertBubble } from '../components/AlertBubble.jsx'
 
 export function LoginPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')

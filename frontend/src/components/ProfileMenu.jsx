@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { KeyRound, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import { apiFetch, getAuthToken, setAuthToken } from '../auth.js'
+import { apiFetch, getApiBaseUrl, getAuthToken, setAuthToken } from '../auth.js'
 
 function initialsFromName(name, fallback) {
   const cleaned = String(name || '').trim()
@@ -16,7 +16,7 @@ function initialsFromName(name, fallback) {
 }
 
 export function ProfileMenu() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [me, setMe] = useState(null)

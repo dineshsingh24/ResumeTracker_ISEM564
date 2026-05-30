@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, Plus, RefreshCcw } from 'lucide-react'
 
-import { apiFetch } from '../auth.js'
+import { apiFetch, getApiBaseUrl } from '../auth.js'
 import { AlertBubble } from '../components/AlertBubble.jsx'
 
 export function RolesPage() {
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000', [])
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
