@@ -21,8 +21,8 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db
-from models import (
+from backend.database import Base, engine, get_db
+from backend.models import (
     AIConnection,
     Job,
     JobStatus,
@@ -34,7 +34,7 @@ from models import (
     TelemetryEvent,
     User,
 )
-from schemas import (
+from backend.schemas import (
     AIConnectionCreate,
     AIConnectionRead,
     AIConnectionUpdate,
@@ -65,8 +65,7 @@ from schemas import (
     UserSettingsUpdate,
     UserUpdate,
 )
-from services.rss_service import fetch_and_rank_jobs
-
+from backend.services.rss_service import fetch_and_rank_jobs
 
 class RSSFetchRequest(BaseModel):
     user_id: int
