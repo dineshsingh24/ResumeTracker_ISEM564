@@ -2287,10 +2287,18 @@ def _mount_frontend(app: FastAPI) -> None:
     from fastapi.staticfiles import StaticFiles
 
     frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
-    if not os.path.isdir(frontend_dist):
+    index_html = os.path.join(frontend_dist, "index.html")
+
+    if not os.path.isdir(frontend_dist) or not os.path.isfile(index_html):
+        print(f"[startup] frontend bundle missing at {frontend_dist}", flush=True)
+
+        @app.get("/", include_in_schema=False)
+        def serve_api_root() -> dict[str, str]:
+            return {"status": "ok", "message": "ResumeTracker API is running", "docs": "/docs"}
+
         return
 
-    index_html = os.path.join(frontend_dist, "index.html")
+    print(f"[startup] serving frontend from {frontend_dist}", flush=True)
     assets_dir = os.path.join(frontend_dist, "assets")
     if os.path.isdir(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
