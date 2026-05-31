@@ -9,6 +9,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
+RUN test -f /app/backend/static/index.html
 
 EXPOSE 8080
 

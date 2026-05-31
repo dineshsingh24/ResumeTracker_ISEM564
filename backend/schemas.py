@@ -158,6 +158,11 @@ class RankingRuleCreate(RankingRuleBase):
     pass
 
 
+class ReplaceRulesRequest(BaseModel):
+    user_id: int
+    rules: list[RankingRuleCreate]
+
+
 class RankingRuleUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=255)
     attribute: Optional[str] = Field(default=None, min_length=1, max_length=64)

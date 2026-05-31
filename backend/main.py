@@ -60,6 +60,7 @@ from backend.schemas import (
     RankingRuleCreate,
     RankingRuleRead,
     RankingRuleUpdate,
+    ReplaceRulesRequest,
     UserCreate,
     UserRead,
     UserSettingsUpdate,
@@ -366,8 +367,56 @@ def _compute_rank_score(db: Session, user_id: int, title: str, description: str)
     return float(score)
 
 
+def _frontend_dist_dir() -> Optional[str]:
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = (
+        os.path.join(backend_dir, "static"),
+        os.path.join(backend_dir, "..", "frontend", "dist"),
+    )
+    for path in candidates:
+        resolved = os.path.abspath(path)
+        if os.path.isfile(os.path.join(resolved, "index.html")):
+            return resolved
+    return None
+
+
+def _mount_frontend(app: FastAPI) -> None:
+    """Serve built React app when a static bundle is present (Cloud Run / production)."""
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    frontend_dist = _frontend_dist_dir()
+    if not frontend_dist:
+        print("[startup] frontend bundle missing (checked backend/static and frontend/dist)", flush=True)
+
+        @app.get("/", include_in_schema=False)
+        def serve_api_root() -> dict[str, str]:
+            return {"status": "ok", "message": "ResumeTracker API is running", "docs": "/docs"}
+
+        return
+
+    index_html = os.path.join(frontend_dist, "index.html")
+    print(f"[startup] serving frontend from {frontend_dist}", flush=True)
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
+
+    @app.get("/", include_in_schema=False)
+    def serve_root() -> FileResponse:
+        return FileResponse(index_html)
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str) -> FileResponse:
+        if full_path.startswith("assets/"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+        candidate = os.path.join(frontend_dist, full_path)
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+        return FileResponse(index_html)
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="ResumeTracker API")
+    app = FastAPI(title="ResumeTracker API", openapi_url="/openapi.json", docs_url="/docs")
 
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -564,8 +613,14 @@ def create_app() -> FastAPI:
             return
 
     @app.get("/health")
-    def health() -> dict[str, str]:
-        return {"status": "ok"}
+    def health() -> dict[str, object]:
+        dist = _frontend_dist_dir()
+        return {
+            "status": "ok",
+            "ui_ready": bool(dist),
+            "ui_bundle": dist,
+            "revision": os.environ.get("K_REVISION", ""),
+        }
 
     @app.post("/users", response_model=UserRead, status_code=status.HTTP_201_CREATED)
     def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> User:
@@ -1596,10 +1651,6 @@ def create_app() -> FastAPI:
             {"value": "description", "label": "Role requirement"},
         ]
 
-    class ReplaceRulesRequest(BaseModel):
-        user_id: int
-        rules: list[RankingRuleCreate]
-
     @app.post("/ranking_rules/replace", response_model=list[RankingRuleRead])
     def replace_ranking_rules(payload: ReplaceRulesRequest, db: Session = Depends(get_db)) -> Sequence[RankingRule]:
         user = db.get(User, payload.user_id)
@@ -2279,54 +2330,6 @@ def create_app() -> FastAPI:
 
     _mount_frontend(app)
     return app
-
-
-def _frontend_dist_dir() -> Optional[str]:
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
-    candidates = (
-        os.path.join(backend_dir, "static"),
-        os.path.join(backend_dir, "..", "frontend", "dist"),
-    )
-    for path in candidates:
-        resolved = os.path.abspath(path)
-        if os.path.isfile(os.path.join(resolved, "index.html")):
-            return resolved
-    return None
-
-
-def _mount_frontend(app: FastAPI) -> None:
-    """Serve built React app when a static bundle is present (Cloud Run / production)."""
-    from fastapi.responses import FileResponse
-    from fastapi.staticfiles import StaticFiles
-
-    frontend_dist = _frontend_dist_dir()
-    if not frontend_dist:
-        print("[startup] frontend bundle missing (checked backend/static and frontend/dist)", flush=True)
-
-        @app.get("/", include_in_schema=False)
-        def serve_api_root() -> dict[str, str]:
-            return {"status": "ok", "message": "ResumeTracker API is running", "docs": "/docs"}
-
-        return
-
-    index_html = os.path.join(frontend_dist, "index.html")
-    print(f"[startup] serving frontend from {frontend_dist}", flush=True)
-    assets_dir = os.path.join(frontend_dist, "assets")
-    if os.path.isdir(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
-
-    @app.get("/", include_in_schema=False)
-    def serve_root() -> FileResponse:
-        return FileResponse(index_html)
-
-    @app.get("/{full_path:path}", include_in_schema=False)
-    def serve_spa(full_path: str) -> FileResponse:
-        if full_path.startswith("assets/"):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
-        candidate = os.path.join(frontend_dist, full_path)
-        if os.path.isfile(candidate):
-            return FileResponse(candidate)
-        return FileResponse(index_html)
 
 
 app = create_app()
