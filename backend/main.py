@@ -2281,16 +2281,27 @@ def create_app() -> FastAPI:
     return app
 
 
+def _frontend_dist_dir() -> Optional[str]:
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = (
+        os.path.join(backend_dir, "static"),
+        os.path.join(backend_dir, "..", "frontend", "dist"),
+    )
+    for path in candidates:
+        resolved = os.path.abspath(path)
+        if os.path.isfile(os.path.join(resolved, "index.html")):
+            return resolved
+    return None
+
+
 def _mount_frontend(app: FastAPI) -> None:
-    """Serve built React app from frontend/dist when present (Cloud Run / production)."""
+    """Serve built React app when a static bundle is present (Cloud Run / production)."""
     from fastapi.responses import FileResponse
     from fastapi.staticfiles import StaticFiles
 
-    frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
-    index_html = os.path.join(frontend_dist, "index.html")
-
-    if not os.path.isdir(frontend_dist) or not os.path.isfile(index_html):
-        print(f"[startup] frontend bundle missing at {frontend_dist}", flush=True)
+    frontend_dist = _frontend_dist_dir()
+    if not frontend_dist:
+        print("[startup] frontend bundle missing (checked backend/static and frontend/dist)", flush=True)
 
         @app.get("/", include_in_schema=False)
         def serve_api_root() -> dict[str, str]:
@@ -2298,6 +2309,7 @@ def _mount_frontend(app: FastAPI) -> None:
 
         return
 
+    index_html = os.path.join(frontend_dist, "index.html")
     print(f"[startup] serving frontend from {frontend_dist}", flush=True)
     assets_dir = os.path.join(frontend_dist, "assets")
     if os.path.isdir(assets_dir):
@@ -2318,4 +2330,17 @@ def _mount_frontend(app: FastAPI) -> None:
 
 
 app = create_app()
+
+
+@app.get("/deploy-check", include_in_schema=False)
+def deploy_check() -> dict[str, object]:
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    dist = _frontend_dist_dir()
+    return {
+        "cwd": os.getcwd(),
+        "backend_dir": backend_dir,
+        "frontend_bundle": dist,
+        "frontend_bundle_found": bool(dist),
+        "git_commit_hint": os.environ.get("K_REVISION", "unknown"),
+    }
 

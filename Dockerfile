@@ -1,4 +1,4 @@
-# Production image: API + pre-built React UI (frontend/dist committed in git).
+# Production image: API + React UI bundled in backend/static
 FROM python:3.12-slim
 WORKDIR /app
 
@@ -9,7 +9,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
-COPY frontend/dist ./frontend/dist
 
 EXPOSE 8080
 

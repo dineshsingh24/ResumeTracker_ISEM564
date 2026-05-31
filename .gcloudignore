@@ -1,0 +1,12 @@
+.git
+.cursor
+node_modules
+frontend/node_modules
+venv
+backend/venv
+__pycache__
+*.db
+backend/uploads
+docs
+tools
+Demo_Submission_Diagrams.pdf
